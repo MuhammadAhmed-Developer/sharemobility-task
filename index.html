@@ -8,19 +8,84 @@
 
 <body>
   <h1>Echo Messages for Chat ID = 3 Here as HTML</h1>
-  <div id="chat-id-3"></div>
+  <div id="messages-id-3"></div>
 
   <h1>Render Messages for Chat ID = 8 Here as JSON</h1>
-  <div id="chat-id-8-json"></div>
+  <div id="messages-id-8"></div>
 
   <h1>Render User ID = 100 Here as JSON</h1>
-  <div id="user-id-100-json"></div>
+  <div id="users-id-100"></div>
 
   <h1>Echo Message ID = 459 Here as HTML</h1>
-  <div id="message-id-459"></div>
+  <div id="messages-id-459"></div>
 
-  <script src="script.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      fetchMessagesAndRender('http://localhost:3000/messagesWithId3', 'messages-id-3');
+      fetchDataAndRender('http://localhost:3000/messagesWithId8', 'messages-id-8');
+      fetchDataAndRender('http://localhost:3000/usersWithId100', 'users-id-100');
+      fetchMessageAndRender('http://localhost:3000/messagesWithId459', 'messages-id-459');
+    });
 
+    function fetchMessagesAndRender(url, elementId) {
+      fetch(url)
+        .then(response => response.json())
+        .then(data => {
+          const element = document.getElementById(elementId);
+          if (Array.isArray(data) && data.length > 0) {
+            element.innerHTML = data.map(message => `
+              <div style="margin-bottom: 20px; border: 1px solid #ccc; padding: 10px;">
+                <h4>Message ID: ${message.id}</h4>
+                <p><strong>Chat ID:</strong> ${message.chatid}</p>
+                <p><strong>Message:</strong> ${message.message.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>
+                <p><strong>User ID:</strong> ${message.userid}</p>
+                <p><strong>Timestamp:</strong> ${new Date(message.ts * 1000).toLocaleString()}</p>
+              </div>
+            `).join('');
+          } else {
+            element.innerHTML = "<p>No messages found.</p>";
+          }
+        })
+        .catch(error => console.error('Error fetching data:', error));
+    }
+
+    function fetchDataAndRender(url, elementId, isHtml = false) {
+      fetch(url)
+        .then(response => response.json())
+        .then(data => {
+          const element = document.getElementById(elementId);
+          if (isHtml) {
+            element.innerHTML = JSON.stringify(data, null, 2).replace(/</g, "&lt;").replace(/>/g, "&gt;");
+          } else {
+            element.innerHTML = JSON.stringify(data, null, 2);
+          }
+        })
+        .catch(error => console.error('Error fetching data:', error));
+    }
+
+    function fetchMessageAndRender(url, elementId) {
+      fetch(url)
+        .then(response => response.json())
+        .then(data => {
+          const element = document.getElementById(elementId);
+          if (Array.isArray(data) && data.length > 0) {
+            const message = data[0];
+            element.innerHTML = `
+              <div>
+                <h3>Message ID: ${message.id}</h3>
+                <p><strong>Chat ID:</strong> ${message.chatid}</p>
+                <p><strong>Message:</strong> ${message.message.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>
+                <p><strong>User ID:</strong> ${message.userid}</p>
+                <p><strong>Timestamp:</strong> ${new Date(message.ts * 1000).toLocaleString()}</p>
+              </div>
+            `;
+          } else {
+            element.innerHTML = "<p>No message found.</p>";
+          }
+        })
+        .catch(error => console.error('Error fetching data:', error));
+    }
+  </script>
 </body>
 
 </html>
